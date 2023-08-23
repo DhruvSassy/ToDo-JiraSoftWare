@@ -1,6 +1,5 @@
 import React from 'react';
-
-import { Box,Card,styled } from '@mui/material';
+import { Box, Card, styled } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const Item = styled('div')({
@@ -29,15 +28,16 @@ const CardBox = styled(Card)({
 
 const CardComponent = ({ onDelete, title, description, onClick }) => {
   return (
-    <CardBox onClick={onClick}>
-      <Box>
-        <Item>{`Title : ${title}`}</Item>
-        <Item>{`Description : ${description}`}</Item>
+
+      <CardBox>
+        <Box className="card-handle" onDoubleClick={onClick}>
+          <Item>{`Title: ${title}`}</Item>
+          <Item>{`Description: ${description}`}</Item>
+        </Box>
         <IconComponent>
           <DeleteIcon onClick={onDelete} />
         </IconComponent>
-      </Box>
-    </CardBox>
+      </CardBox>
   );
 };
 
