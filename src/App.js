@@ -1,10 +1,8 @@
 import './App.css';
-import DashBoard from './Routes/Page/DashBoard';
+import DashBoard from './Page/DashBoard';
 
-function App() {
-  return (
-    <DashBoard />
-  );
-}
+const App = () => {
+  return <DashBoard />;
+};
 
 export default App;

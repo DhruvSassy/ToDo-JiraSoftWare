@@ -1,29 +1,43 @@
 import React from 'react';
-import Card from '@mui/material/Card';
-import { Box } from '@mui/material';
+
+import { Box,Card,styled } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import InputComponent from '../InputComponent';
 
-const CardComponent = (props) => {
-  const { onClick, index } = props;
+const Item = styled('div')({
+  display: 'flex',
+  justifyContent: 'flex-start',
+  marginTop: '15px',
+  marginBottom: '20px',
+  marginLeft: '10px',
+  fontWeight: 'bold',
+  fontSize: '1rem',
+  letterSpacing: '1px',
+});
 
+const IconComponent = styled('div')({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  marginBottom: '20px',
+  marginTop: '20px',
+  marginRight: '10px',
+});
+
+const CardBox = styled(Card)({
+  maxWidth: '345px',
+  marginTop: '20px',
+});
+
+const CardComponent = ({ onDelete, title, description, onClick }) => {
   return (
-    <Card sx={{ maxWidth: 345, margin: 1 }}>
-      <Box color="text.primary" sx={{ margin: 1 }}>
-        <InputComponent label={`Title ${index}`} />
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            marginBottom: '20px',
-            marginTop: '20px',
-            marginRight: '10px',
-          }}
-        >
-          <DeleteIcon onClick={onClick} />
-        </div>
+    <CardBox onClick={onClick}>
+      <Box>
+        <Item>{`Title : ${title}`}</Item>
+        <Item>{`Description : ${description}`}</Item>
+        <IconComponent>
+          <DeleteIcon onClick={onDelete} />
+        </IconComponent>
       </Box>
-    </Card>
+    </CardBox>
   );
 };
 

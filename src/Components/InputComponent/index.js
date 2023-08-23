@@ -15,6 +15,8 @@ const InputComponent = (props) => {
     helperText,
     placeholder,
     className,
+    rows,
+    multiline,
     disabled,
     defaultValue,
     autoFocus
@@ -30,6 +32,8 @@ const InputComponent = (props) => {
       onChange={onChange}
       placeholder={placeholder}
       className={className}
+      rows={rows}
+      multiline={multiline}
       margin="normal"
       required
       autoFocus={autoFocus}
