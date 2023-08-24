@@ -26,10 +26,10 @@ const CardBox = styled(Card)({
   marginTop: '20px',
 });
 
-const CardComponent = ({ onDelete, title, description, onClick }) => {
+const CardComponent = ({ style,onDelete, title, description, onClick }) => {
   return (
 
-      <CardBox>
+      <CardBox style={style}>
         <Box className="card-handle" onDoubleClick={onClick}>
           <Item>{`Title: ${title}`}</Item>
           <Item>{`Description: ${description}`}</Item>

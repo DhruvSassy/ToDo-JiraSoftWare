@@ -10,17 +10,29 @@ import CustomModal from '../../Components/CustomModal';
 import InputComponent from '../../Components/InputComponent';
 import AlertDialog from '../../Components/AlertDialog';
 import NotiStackComponent from '../../Components/NotiStackComponent';
-import Draggable from 'react-draggable';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
 const HeadComponent = styled('div')({
   display: 'flex',
   flexDirection: 'row',
+  borderTop: '1px solid #ccc',
+  backgroundColor: 'white',
+});
+
+const Column = styled('div')({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  borderRight: '1px solid #ccc',
+  padding: '10px',
+  backgroundColor: '#fff',
 });
 
 const ItemCard = styled('div')({
   flex: 1,
   marginRight: 0,
   marginLeft: 25,
+  marginBottom: '10px',
 });
 
 const Item = styled('div')({
@@ -42,7 +54,6 @@ const StyledButton = styled(Box)({
   marginRight: '10px',
 });
 
-const columnWidth = 200; 
 const DashBoard = () => {
   const dispatch = useDispatch();
   const todoItems = useSelector((state) => state.todo.todo);
@@ -56,9 +67,6 @@ const DashBoard = () => {
     title: '',
     description: '',
   });
-  const [dragStartIndex, setDragStartIndex] = useState(null);
-  const [draggedOverIndex, setDraggedOverIndex] = useState(null);
-  const [dragOverColumn, setDragOverColumn] = useState(null);
 
   const { title, description } = todo;
 
@@ -120,8 +128,8 @@ const DashBoard = () => {
       notiComponent.showSnackbar(` ToDo added successfully!`, 'success');
     }
   };
-  const handleDeleteTodo = (index) => {
-    setSelectedDeleteIndex(index);
+  const handleDeleteTodo = (id) => {
+    setSelectedDeleteIndex(id);
     setOpenDialog(true);
   };
 
@@ -157,63 +165,46 @@ const DashBoard = () => {
 
   const handleConfirmDelete = () => {
     if (selectedDeleteIndex !== null) {
-      dispatch(deleteBox(selectedDeleteIndex));
+      dispatch(deleteBox(selectedDeleteIndex)); // Dispatching the delete action
       setSelectedDeleteIndex(null);
       setOpenDialog(false);
     }
     notiComponent.showSnackbar(` ToDo Deleted successfully!`, 'success');
   };
-  const handleStartCallback = (e, data, index) => {
-    setDragStartIndex(index);
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    const draggedItem = todoItems[sourceIndex];
+
+    const updatedItems = [...todoItems];
+    updatedItems.splice(sourceIndex, 1);
+    updatedItems.splice(destinationIndex, 0, draggedItem);
+
+    
   };
 
-  const handleDragCallback = (e, data, index) => {
-    const dragOverColumn = getColumnFromPosition(data.x);
-    setDraggedOverIndex(index);
-    setDragOverColumn(dragOverColumn);
+  const taskStatus = {
+    toDo: {
+      name: 'ToDo',
+      items: todoItems,
+    },
+    inProgress: {
+      name: 'In Progress',
+      items: [],
+    },
+    qa: {
+      name: 'QA',
+      items: [],
+    },
+    done: {
+      name: 'Done',
+      items: [],
+    },
   };
 
-  const handleStopCallback = (e, data, index) => {
-    if (dragStartIndex !== null && draggedOverIndex !== null) {
-      if (dragStartIndex !== draggedOverIndex) {
-        handleDrop(dragStartIndex, draggedOverIndex, getColumnFromIndex(dragStartIndex));
-      }
-    }
-    setDragStartIndex(null);
-    setDraggedOverIndex(null);
-    setDragOverColumn(null);
-  };
-
-  const getColumnFromPosition = (x) => {
-    const columnIndex = Math.floor(x / columnWidth);
-    switch (columnIndex) {
-      case 0: return 'Todo';
-      case 1: return 'InProgress';
-      case 2: return 'QA';
-      case 3: return 'Done';
-      default: return 'Unknown';
-    }
-  };
-
-  const getColumnFromIndex = (index) => {
-    // Replace this logic with your own to determine the column from the index
-    // For example, if index is less than 10, it might be in "Todo"
-    if (index < 10) {
-      return 'Todo';
-    } else if (index < 20) {
-      return 'InProgress';
-    } else if (index < 30) {
-      return 'QA';
-    } else {
-      return 'Done';
-    }
-  };
-
-  const handleDrop = (fromIndex, toIndex, fromColumn) => {
-    // Handle the logic to move the item from one column to another
-    console.log(`Moved from ${fromColumn} to ${dragOverColumn}`);
-    // Dispatch appropriate actions or update state as needed
-  };
   return (
     <>
       <StyledButton>
@@ -225,38 +216,44 @@ const DashBoard = () => {
           onClick={handleAddTodo}
         />
       </StyledButton>
-      <HeadComponent>
-        <Item style={{ marginLeft: 10 }}>Todo</Item>
-        <Item>In Progress</Item>
-        <Item>QA</Item>
-        <Item>Done</Item>
-      </HeadComponent>
-      {/* <Item style={{ backgroundColor: 'whitesmoke' }}> */}
-      {todoItems.map((item, index) => (
-        <ItemCard key={item?.id}>
-  <Draggable
-      axis="both"
-      handle=".handle"
-      defaultPosition={{ x: 0, y: 0 }}
-      grid={[25, 25]}
-      scale={1}
-      onStart={(e, data) => handleStartCallback(e, data, index)}
-      onDrag={(e, data) => handleDragCallback(e, data, index, getColumnFromPosition(data.x))}
-      onStop={(e, data) => handleStopCallback(e, data, index, getColumnFromPosition(data.x))}
-    >
-    
-            <div className="handle"> {/* Make sure the "handle" class is applied */}
-              <CardComponent
-                onDelete={() => handleDeleteTodo(index)}
-                title={item?.title}
-                description={item?.description}
-                onClick={() => handleOnOpenModel(index)}
-              />
-            </div>
-          </Draggable>
-        </ItemCard>
-      ))}
-
+      <DragDropContext onDragEnd={onDragEnd}>
+        <HeadComponent>
+          {Object.values(taskStatus).map((status) => (
+            <Droppable
+              key={status.name}
+              droppableId={status.name}
+              direction="vertical"
+            >
+              {(provided) => (
+                <Column {...provided.droppableProps} ref={provided.innerRef}>
+                  <Item>{status.name}</Item>
+                  {status.items.map((item, index) => (
+                    <ItemCard key={item.id}>
+                    <Draggable draggableId={item.id} index={index}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+  <CardComponent
+                              onDelete={() => handleDeleteTodo(item?.id)}
+                              title={item.title}
+                              description={item.description}
+                              onClick={() => handleOnOpenModel(index)}
+                            />
+                        </div>
+                      )}
+                    </Draggable>
+                  </ItemCard>
+                  ))}
+                  {provided.placeholder}
+                </Column>
+              )}
+            </Droppable>
+          ))}
+        </HeadComponent>
+      </DragDropContext>
       {/* </Item> */}
 
       <CustomModal

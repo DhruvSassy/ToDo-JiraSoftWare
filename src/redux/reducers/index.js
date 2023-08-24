@@ -25,10 +25,10 @@ const todoReducer = (state = initialState, action) => {
         todo: updatedTodoData,
       };
 
-    case DELETE_TODO:
+      case 'DELETE_TODO':
       return {
         ...state,
-        todo: state.todo.filter((_, index) => index !== action.payload),
+        todo: state.todo.filter((item) => item.id !== action.payload),
       };
 
     default:
