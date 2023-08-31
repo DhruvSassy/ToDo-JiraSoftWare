@@ -23,21 +23,20 @@ const IconComponent = styled('div')({
 
 const CardBox = styled(Card)({
   maxWidth: '345px',
-  marginTop: '20px',
+  // marginTop: '20px',
 });
 
-const CardComponent = ({ style,onDelete, title, description, onClick }) => {
+const CardComponent = ({ style, onDelete, title, content, onClick }) => {
   return (
-
-      <CardBox style={style}>
-        <Box className="card-handle" onDoubleClick={onClick}>
-          <Item>{`Title: ${title}`}</Item>
-          <Item>{`Description: ${description}`}</Item>
-        </Box>
-        <IconComponent>
-          <DeleteIcon onClick={onDelete} />
-        </IconComponent>
-      </CardBox>
+    <CardBox style={style}>
+      <Box className="card-handle" onDoubleClick={onClick}>
+         {/* <Item>{`Title: ${title}`}</Item> */}
+        <Item>{`Content: ${content}`}</Item>
+      </Box>
+      <IconComponent>
+        <DeleteIcon onClick={onDelete} style={{cursor:"auto"}}/>
+      </IconComponent>
+    </CardBox>
   );
 };
 
