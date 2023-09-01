@@ -26,12 +26,12 @@ const CardBox = styled(Card)({
   // marginTop: '20px',
 });
 
-const CardComponent = ({ style, onDelete, title, content, onClick }) => {
+const CardComponent = ({ style, onDelete, title, description, onClick }) => {
   return (
     <CardBox style={style}>
       <Box className="card-handle" onDoubleClick={onClick}>
-         {/* <Item>{`Title: ${title}`}</Item> */}
-        <Item>{`Content: ${content}`}</Item>
+         <Item>{`Title: ${title}`}</Item>
+        <Item>{`Description: ${description}`}</Item>
       </Box>
       <IconComponent>
         <DeleteIcon onClick={onDelete} style={{cursor:"auto"}}/>

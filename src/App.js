@@ -1,6 +1,6 @@
 import './App.css';
-import DashBoard from './Page/DashBoard';
 import { SnackbarProvider } from 'notistack';
+import DashBoard from './Page/DashBoard';
 
 const App = () => {
   return (
