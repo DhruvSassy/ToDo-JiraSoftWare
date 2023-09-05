@@ -1,10 +1,7 @@
-import { ADD_TODO, DELETE_TODO, EDIT_TODO } from '../action/constant';
+import { ADD_TODO, CHANGE_TASK_STATUS, DELETE_TODO, EDIT_TODO } from '../action/constant';
 
 const initialState = {
-  ToDo: [],
-  InProgress: [],
-  QA: [],
-  Done: [],
+  tasks: [],
 };
 
 const todoReducer = (state = initialState, action) => {
@@ -12,38 +9,34 @@ const todoReducer = (state = initialState, action) => {
     case ADD_TODO:
       return {
         ...state,
-        ToDo: [...state.ToDo, action.payload],
+        tasks: [...state.tasks, action.payload],
       };
 
-      case EDIT_TODO:
-      const updatedTodoData = state.ToDo.map((todo) =>
-        todo.id === action.payload.id ? action.payload : todo
+    case EDIT_TODO:
+      const updatedTaskData = state.tasks.map((task) =>
+        task.id === action.payload.id ? { ...task, ...action.payload } : task
       );
-      const updatedInProgressData = state.InProgress.map((inProgress) =>
-        inProgress.id === action.payload.id ? action.payload : inProgress
-      );
-      const updatedQaData = state.QA.map((qa) =>
-        qa.id === action.payload.id ? action.payload : qa
-      );
-      const updatedDoneData = state.Done.map((done) =>
-        done.id === action.payload.id ? action.payload : done
-      );
-      return {
-        ...state,
-        ToDo: updatedTodoData,
-        InProgress: updatedInProgressData,
-        QA: updatedQaData,
-        Done: updatedDoneData,
-      };
-    
 
-      case DELETE_TODO:
       return {
         ...state,
-        ToDo: state?.ToDo?.filter((item) => item?.id !== action?.payload),
-        InProgress:  state?.InProgress?.filter((item) => item?.id !== action?.payload),
-        QA:  state?.QA?.filter((item) => item?.id !== action?.payload),
-        Done:  state?.Done?.filter((item) => item?.id !== action?.payload),
+        tasks: updatedTaskData,
+      };
+
+    case DELETE_TODO:
+      return {
+        ...state,
+        tasks: state.tasks.filter((item) => item.id !== action.payload),
+      };
+
+    case CHANGE_TASK_STATUS:
+      const { taskId, newStatus } = action.payload;
+      const updatedTasks = state.tasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task
+      );
+
+      return {
+        ...state,
+        tasks: updatedTasks,
       };
 
     default:

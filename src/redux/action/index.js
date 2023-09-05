@@ -1,4 +1,4 @@
-import { ADD_TODO, DELETE_TODO, EDIT_TODO } from "./constant"
+import { ADD_TODO, CHANGE_TASK_STATUS, DELETE_TODO, EDIT_TODO } from "./constant"
 
 export const addTodo = (box) => ({
     type:ADD_TODO,
@@ -13,4 +13,13 @@ export const editTodo = (data) => ({
 export const deleteTask = (taskId) => ({
     type: DELETE_TODO,
     payload: taskId,
+});
+
+export const changeTaskStatus = (taskId, newStatus) => ({
+    type: CHANGE_TASK_STATUS,
+    payload: {
+      taskId,
+      newStatus,
+    },
   });
+  
