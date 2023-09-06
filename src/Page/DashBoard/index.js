@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { Box, styled } from '@mui/material';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { useSelector, useDispatch } from 'react-redux';
-import ButtonComponent from '../../Components/ButtonComponent';
 import {
   addTodo,
   changeTaskStatus,
   deleteTask,
   editTodo,
 } from '../../redux/action';
+
+import { Box, styled } from '@mui/material';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+
+import ButtonComponent from '../../Components/ButtonComponent';
 import CardComponent from '../../Components/CardComponent';
 import CustomModal from '../../Components/CustomModal';
 import InputComponent from '../../Components/InputComponent';
 import AlertDialog from '../../Components/AlertDialog';
 import NotiStackComponent from '../../Components/NotiStackComponent';
-import Editor from '../../Components/CkEditor';
-import CkEditor from '../../Components/CkEditor';
 
 const StyledButton = styled(Box)({
   display: 'flex',
@@ -180,17 +180,18 @@ const DashBoard = () => {
 
     const newTasksByStatus = { ...tasksByStatus };
     
-    // Find the source and destination arrays based on droppableIds
+    // jya thi array levano hoi e sourceArray ma aave
     const sourceArray = [...newTasksByStatus[source.droppableId]];
+    // jya mukva no hoi te array aave
     const destinationArray = [...newTasksByStatus[destination.droppableId]];
              
-      // Remove the task from the source array
+      // task Remove kare source array mathi
       const [draggedTask] = sourceArray.splice(source.index, 1);
 
-      // Add the task to the destination array
+      // task Add kare  destination array ma
       destinationArray.splice(destination.index, 0, draggedTask);
 
-      // Update the tasksByStatus object with the new arrays
+      // Update kare both array ma 
       newTasksByStatus[source.droppableId] = sourceArray;
       newTasksByStatus[destination.droppableId] = destinationArray;
 
@@ -304,7 +305,7 @@ const DashBoard = () => {
           />
         </Box>
         <Box mb={{ xs: 6, md: 5 }}>
-          {/* <InputComponent
+          <InputComponent
             fullWidth
             required
             name="description"
@@ -317,9 +318,8 @@ const DashBoard = () => {
             onChange={handleChange}
             error={errorText?.description}
             helperText={errorText?.description}
-          /> */}
-          <CkEditor />
-        </Box>
+          />
+          </Box>
         <Box mb={{ xs: 6, md: 5 }}>
           {isEdit ? (
             <ButtonComponent

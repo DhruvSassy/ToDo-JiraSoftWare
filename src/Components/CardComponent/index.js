@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Box, Card, styled } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -23,7 +24,6 @@ const IconComponent = styled('div')({
 
 const CardBox = styled(Card)({
   maxWidth: '345px',
-  // marginTop: '20px',
 });
 
 const CardComponent = ({ style, onDelete, title, description, onClick }) => {
