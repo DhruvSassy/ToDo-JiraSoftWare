@@ -12,15 +12,16 @@ const todoReducer = (state = initialState, action) => {
         tasks: [...state.tasks, action.payload],
       };
 
-    case EDIT_TODO:
+      case EDIT_TODO:
       const updatedTaskData = state.tasks.map((task) =>
         task.id === action.payload.id ? { ...task, ...action.payload } : task
       );
-
+    
       return {
         ...state,
         tasks: updatedTaskData,
       };
+    
 
     case DELETE_TODO:
       return {
@@ -33,7 +34,6 @@ const todoReducer = (state = initialState, action) => {
       const updatedTasks = state.tasks.map((task) =>
         task.id === taskId ? { ...task, status: newStatus } : task
       );
-
       return {
         ...state,
         tasks: updatedTasks,

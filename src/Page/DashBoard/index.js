@@ -35,34 +35,25 @@ const Status = [
 const DashBoard = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.todoJira.tasks);
-  console.log("tasks:",tasks)
-
+  console.log("task",tasks)
   const [openModal, setOpenModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [errorText, setErrorText] = useState({});
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedEditIndex, setSelectedEditIndex] = useState(null);
+  const [taskIdToEdit, setTaskIdToEdit] = useState(null);
   const [selectedDeleteIndex, setSelectedDeleteIndex] = useState(null);
   const [todo, setTodo] = useState({
     title: '',
     description: '',
   });
 
-  const initialTasksByStatus = {
-    ToDo: tasks,
-    InProgress: [],
-    QA: [],
-    Done: [],
-  };
-
-  const [tasksByStatus, setTasksByStatus] = useState(initialTasksByStatus);
+  const [tasksByStatus, setTasksByStatus] = useState(tasks);
 
   const { title, description } = todo;
 
   const notiComponent = NotiStackComponent();
 
   const handleAddTodo = () => {
-    setSelectedEditIndex(null);
     setOpenModal(true);
     setIsEdit(false);
   };
@@ -109,19 +100,15 @@ const DashBoard = () => {
     const validationResult = validate();
 
     if (!validationResult.isError) {
-      // Find the status object based on the selected title
-      const selectedStatus = Status.find((status) => status.title === 'ToDo');
-
-      if (selectedStatus) {
-        const newTodo = {
-          id: `${Date.now()}`,
-          title,
-          description,
-        };
-        handleCloseModal();
-        dispatch(addTodo(newTodo));
-        notiComponent.showSnackbar('ToDo added successfully!', 'success');
-      }
+      const newTodo = {
+        id: `${Date.now()}`,
+        title,
+        description,
+        status: 'ToDo', 
+      };
+      handleCloseModal();
+      dispatch(addTodo(newTodo));
+      notiComponent.showSnackbar('ToDo added successfully!', 'success');
     }
   };
 
@@ -130,32 +117,33 @@ const DashBoard = () => {
     setOpenDialog(true);
   };
 
-  const handleOnOpenModel = (index) => {
-    const selectedItem = tasks[index];
+  const handleOnOpenModel = (id) => {
+    const selectedItem = tasks.find((task) => task.id === id); 
     setTodo({
       title: selectedItem?.title,
       description: selectedItem?.description,
     });
-    setSelectedEditIndex(index);
+    setTaskIdToEdit(id);
     setOpenModal(true);
     setIsEdit(true);
   };
   
+
+
   const handleOnEdit = () => {
     const validationResult = validate();
-
-    if (!validationResult.isError && selectedEditIndex !== null) {
+  
+    if (!validationResult.isError) {
       const updatedTodo = {
-        id: tasks[selectedEditIndex].id,
-        title,
-        description,
+        id: taskIdToEdit, 
+        title: todo.title,
+        description: todo.description,
       };
-      dispatch(editTodo(updatedTodo));
+      dispatch(editTodo(updatedTodo)); 
       handleCloseModal();
       notiComponent.showSnackbar('Todo Updated successfully!', 'success');
     }
   };
-  
 
   const handleCloseAlert = () => {
     setOpenDialog(false);
@@ -176,43 +164,36 @@ const DashBoard = () => {
     }
 
     const { source, destination } = result;
-   
+    const draggedTaskId = result.draggableId;
 
-    const newTasksByStatus = { ...tasksByStatus };
-    
-    // jya thi array levano hoi e sourceArray ma aave
-    const sourceArray = [...newTasksByStatus[source.droppableId]];
-    // jya mukva no hoi te array aave
-    const destinationArray = [...newTasksByStatus[destination.droppableId]];
-             
-      // task Remove kare source array mathi
-      const [draggedTask] = sourceArray.splice(source.index, 1);
+    const draggedTask = tasks.find((task) => task.id === draggedTaskId);
 
-      // task Add kare  destination array ma
-      destinationArray.splice(destination.index, 0, draggedTask);
+    if (!draggedTask) {
+      return;
+    }
 
-      // Update kare both array ma 
-      newTasksByStatus[source.droppableId] = sourceArray;
-      newTasksByStatus[destination.droppableId] = destinationArray;
-
+    const destinationStatus = destination.droppableId;
     if (
       (source.droppableId === 'ToDo' &&
         destination.droppableId === 'InProgress') ||
       (source.droppableId === 'InProgress' &&
-        destination.droppableId === 'ToDo')
-    ) {
-      setTasksByStatus(newTasksByStatus);
-      dispatch(changeTaskStatus(draggedTask.id, destination.droppableId));
-    } else if (
+        destination.droppableId === 'ToDo') ||
       (source.droppableId === 'InProgress' &&
         destination.droppableId === 'QA') ||
-      (source.droppableId === 'QA' && destination.droppableId === 'InProgress')
+      (source.droppableId === 'QA' &&
+        destination.droppableId === 'InProgress') ||
+      (source.droppableId === 'QA' && destination.droppableId === 'Done')
     ) {
-      setTasksByStatus(newTasksByStatus);
-      dispatch(changeTaskStatus(draggedTask.id, destination.droppableId));
-    } else if (source.droppableId === "QA" && destination.droppableId === "Done"){
-      setTasksByStatus(newTasksByStatus);
-      dispatch(changeTaskStatus(draggedTask.id, destination.droppableId));
+      dispatch(changeTaskStatus(draggedTaskId, destinationStatus)); 
+
+      const updatedTasks = tasks.map((task) => {
+        if (task.id === draggedTaskId) {
+          return { ...task, status: destinationStatus };
+        }
+        return task;
+      });
+
+      setTasksByStatus(updatedTasks);
     }
   };
 
@@ -234,54 +215,61 @@ const DashBoard = () => {
         <DragDropContext onDragEnd={onDragEnd}>
           {Status.map((status) => (
             <Droppable key={status.id} droppableId={status?.title}>
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  style={{
-                    backgroundColor: snapshot.isDraggingOver
-                      ? 'lightblue'
-                      : 'lightgrey',
-                    width: '25%',
-                    marginRight: '10px',
-                    marginLeft: '10px',
-                  }}
-                  {...provided.droppableProps}
-                >
-                  <h2 style={{ textAlign: 'center' }}>{status.title}</h2>
-                  <hr />
-                  {tasksByStatus[status.title].map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          ref={provided.innerRef}
-                          style={{
-                            padding: '8px',
-                            marginLeft: '8px',
-                            borderRadius: '4px',
-                            width: '91%',
-                            ...provided.draggableProps.style,
-                          }}
-                        >
-                          <CardComponent
-                            onDelete={() => handleDeleteTodo(item.id)}
-                            title={item.title}
-                            description={item.description} 
-                            onClick={() => handleOnOpenModel(index)}
-                            style={{ borderRadius: '7%', cursor: 'pointer' }}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
+              {(provided, snapshot) => {
+                const task = tasksByStatus.filter(
+                  (rec) => rec.status === status.title
+                );
+                return (
+                  <div
+                    ref={provided.innerRef}
+                    style={{
+                      backgroundColor: snapshot.isDraggingOver
+                        ? 'lightblue'
+                        : 'lightgrey',
+                      width: '25%',
+                      marginRight: '10px',
+                      marginLeft: '10px',
+                    }}
+                    {...provided.droppableProps}
+                  >
+                    <h2 style={{ textAlign: 'center' }}>{status.title}</h2>
+                    <hr />
+                    {task.map((item, index) => (
+                      <Draggable
+                        key={item.id}
+                        draggableId={item.id}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <div
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            ref={provided.innerRef}
+                            style={{
+                              padding: '8px',
+                              marginLeft: '8px',
+                              borderRadius: '4px',
+                              width: '91%',
+                              ...provided.draggableProps.style,
+                            }}
+                          >
+                            <CardComponent
+                              onDelete={() => handleDeleteTodo(item.id)}
+                              title={item.title}
+                              description={item.description}
+                              onClick={() => handleOnOpenModel(item?.id)}
+                              style={{ borderRadius: '7%', cursor: 'pointer', backgroundColor: snapshot.isDragging
+                              ? "#263B4A"
+                              : "#456C86", color:'white'}}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                );
+              }}
             </Droppable>
           ))}
         </DragDropContext>
@@ -319,7 +307,7 @@ const DashBoard = () => {
             error={errorText?.description}
             helperText={errorText?.description}
           />
-          </Box>
+        </Box>
         <Box mb={{ xs: 6, md: 5 }}>
           {isEdit ? (
             <ButtonComponent
