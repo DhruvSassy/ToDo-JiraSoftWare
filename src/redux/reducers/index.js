@@ -1,4 +1,9 @@
-import { ADD_TODO, CHANGE_TASK_STATUS, DELETE_TODO, EDIT_TODO } from '../action/constant';
+import {
+  ADD_TASK,
+  EDIT_TASK,
+  DELETE_TASK,
+  CHANGE_TASK_STATUS,
+} from '../action/constant';
 
 const initialState = {
   tasks: [],
@@ -6,24 +11,23 @@ const initialState = {
 
 const todoReducer = (state = initialState, action) => {
   switch (action.type) {
-    case ADD_TODO:
+    case ADD_TASK:
       return {
         ...state,
         tasks: [...state.tasks, action.payload],
       };
 
-      case EDIT_TODO:
+    case EDIT_TASK:
       const updatedTaskData = state.tasks.map((task) =>
         task.id === action.payload.id ? { ...task, ...action.payload } : task
       );
-    
+
       return {
         ...state,
         tasks: updatedTaskData,
       };
-    
 
-    case DELETE_TODO:
+    case DELETE_TASK:
       return {
         ...state,
         tasks: state.tasks.filter((item) => item.id !== action.payload),

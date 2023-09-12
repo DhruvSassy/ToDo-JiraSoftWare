@@ -1,25 +1,29 @@
-import { ADD_TODO, CHANGE_TASK_STATUS, DELETE_TODO, EDIT_TODO } from "./constant"
+import {
+  ADD_TASK,
+  EDIT_TASK,
+  DELETE_TASK,
+  CHANGE_TASK_STATUS,
+} from './constant';
 
-export const addTodo = (box) => ({
-    type:ADD_TODO,
-    payload: box,
+export const addTask = (box) => ({
+  type: ADD_TASK,
+  payload: box,
 });
 
-export const editTodo = (data) => ({
-    type:EDIT_TODO,
-    payload: data,
+export const editTask = (data) => ({
+  type: EDIT_TASK,
+  payload: data,
 });
 
 export const deleteTask = (taskId) => ({
-    type: DELETE_TODO,
-    payload: taskId,
+  type: DELETE_TASK,
+  payload: taskId,
 });
 
 export const changeTaskStatus = (taskId, newStatus) => ({
-    type: CHANGE_TASK_STATUS,
-    payload: {
-      taskId,
-      newStatus,
-    },
-  });
-  
+  type: CHANGE_TASK_STATUS,
+  payload: {
+    taskId,
+    newStatus,
+  },
+});

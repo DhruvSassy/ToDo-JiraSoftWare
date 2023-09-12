@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  addTodo,
-  changeTaskStatus,
+  addTask,
+  editTask,
   deleteTask,
-  editTodo,
+  changeTaskStatus,
 } from '../../redux/action';
 
 import { Box, styled } from '@mui/material';
@@ -35,33 +35,28 @@ const Status = [
 const DashBoard = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.todoJira.tasks);
-  console.log("task",tasks)
-  const [openModal, setOpenModal] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
+  console.log('task', tasks);
+  const [openCustomModal, setOpenCustomModal] = useState(false);
   const [errorText, setErrorText] = useState({});
-  const [openDialog, setOpenDialog] = useState(false);
-  const [taskIdToEdit, setTaskIdToEdit] = useState(null);
-  const [selectedDeleteIndex, setSelectedDeleteIndex] = useState(null);
+  const [openAlertBox, setOpenAlertBox] = useState(false);
   const [todo, setTodo] = useState({
+    id: null,
     title: '',
     description: '',
   });
 
-  const [tasksByStatus, setTasksByStatus] = useState(tasks);
-
-  const { title, description } = todo;
+  const { id, title, description } = todo;
 
   const notiComponent = NotiStackComponent();
 
   const handleAddTodo = () => {
-    setOpenModal(true);
-    setIsEdit(false);
+    setOpenCustomModal(true);
   };
 
   const handleCloseModal = () => {
-    setOpenModal(false);
-    setIsEdit(false);
+    setOpenCustomModal(false);
     setTodo({
+      id: null,
       title: '',
       description: '',
     });
@@ -101,61 +96,57 @@ const DashBoard = () => {
 
     if (!validationResult.isError) {
       const newTodo = {
-        id: `${Date.now()}`,
+        id: id || `${Date.now()}`,
         title,
         description,
-        status: 'ToDo', 
+        status: 'ToDo',
       };
       handleCloseModal();
-      dispatch(addTodo(newTodo));
+
+      dispatch(addTask(newTodo));
       notiComponent.showSnackbar('ToDo added successfully!', 'success');
     }
   };
 
-  const handleDeleteTodo = (id) => {
-    setSelectedDeleteIndex(id);
-    setOpenDialog(true);
-  };
-
   const handleOnOpenModel = (id) => {
-    const selectedItem = tasks.find((task) => task.id === id); 
+    const selectedItem = tasks.find((task) => task.id === id);
     setTodo({
+      id,
       title: selectedItem?.title,
       description: selectedItem?.description,
     });
-    setTaskIdToEdit(id);
-    setOpenModal(true);
-    setIsEdit(true);
+    setOpenCustomModal(true);
   };
-  
-
 
   const handleOnEdit = () => {
     const validationResult = validate();
-  
     if (!validationResult.isError) {
       const updatedTodo = {
-        id: taskIdToEdit, 
+        id: todo.id,
         title: todo.title,
         description: todo.description,
       };
-      dispatch(editTodo(updatedTodo)); 
+      dispatch(editTask(updatedTodo));
       handleCloseModal();
       notiComponent.showSnackbar('Todo Updated successfully!', 'success');
     }
   };
 
-  const handleCloseAlert = () => {
-    setOpenDialog(false);
+  const handleDeleteTodo = (id) => {
+    setOpenCustomModal(false);
+    setTodo({
+      id,
+    });
+    setOpenAlertBox(true);
   };
 
   const handleConfirmDelete = () => {
-    if (selectedDeleteIndex !== null) {
-      dispatch(deleteTask(selectedDeleteIndex));
-      setSelectedDeleteIndex(null);
-      setOpenDialog(false);
+    if (id !== null) {
+      dispatch(deleteTask(id));
+      setOpenAlertBox(false);
+      setOpenCustomModal(false);
+      notiComponent.showSnackbar('ToDo Deleted successfully!', 'success');
     }
-    notiComponent.showSnackbar('ToDo Deleted successfully!', 'success');
   };
 
   const onDragEnd = (result) => {
@@ -184,30 +175,20 @@ const DashBoard = () => {
         destination.droppableId === 'InProgress') ||
       (source.droppableId === 'QA' && destination.droppableId === 'Done')
     ) {
-      dispatch(changeTaskStatus(draggedTaskId, destinationStatus)); 
-
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === draggedTaskId) {
-          return { ...task, status: destinationStatus };
-        }
-        return task;
-      });
-
-      setTasksByStatus(updatedTasks);
+      dispatch(changeTaskStatus(draggedTaskId, destinationStatus));
     }
+  };
+
+  const handleCloseAlert = () => {
+    setOpenCustomModal(false);
+    setOpenAlertBox(false);
   };
 
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>Jira Board</h1>
       <StyledButton>
-        <ButtonComponent
-          style={{
-            background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-          }}
-          title="+ Create"
-          onClick={handleAddTodo}
-        />
+        <ButtonComponent title="+ Create" onClick={handleAddTodo} />
       </StyledButton>
       <div
         style={{ display: 'flex', justifyContent: 'center', height: '100%' }}
@@ -216,24 +197,30 @@ const DashBoard = () => {
           {Status.map((status) => (
             <Droppable key={status.id} droppableId={status?.title}>
               {(provided, snapshot) => {
-                const task = tasksByStatus.filter(
-                  (rec) => rec.status === status.title
-                );
+                const task = tasks.filter((rec) => rec.status === status.title);
+                console.log("taskNew:",task);
                 return (
                   <div
                     ref={provided.innerRef}
                     style={{
                       backgroundColor: snapshot.isDraggingOver
-                        ? 'lightblue'
-                        : 'lightgrey',
+                        ? 'lightgrey'
+                        : 'white',
                       width: '25%',
+                      minHeight: '500px',
                       marginRight: '10px',
                       marginLeft: '10px',
                     }}
                     {...provided.droppableProps}
                   >
                     <h2 style={{ textAlign: 'center' }}>{status.title}</h2>
-                    <hr />
+                    <hr
+                      style={{
+                        color: 'black',
+                        height: '1px',
+                        backgroundColor: 'black',
+                      }}
+                    />
                     {task.map((item, index) => (
                       <Draggable
                         key={item.id}
@@ -258,9 +245,12 @@ const DashBoard = () => {
                               title={item.title}
                               description={item.description}
                               onClick={() => handleOnOpenModel(item?.id)}
-                              style={{ borderRadius: '7%', cursor: 'pointer', backgroundColor: snapshot.isDragging
-                              ? "#263B4A"
-                              : "#456C86", color:'white'}}
+                              style={{
+                                borderRadius: '7%',
+                                cursor: 'pointer',
+                                backgroundColor: 'whitesmoke',
+                                color: 'black',
+                              }}
                             />
                           </div>
                         )}
@@ -274,72 +264,77 @@ const DashBoard = () => {
           ))}
         </DragDropContext>
       </div>
-      <CustomModal
-        open={openModal}
-        onClose={handleCloseModal}
-        title={isEdit ? 'Edit Todo' : 'Add Todo'}
-      >
-        <Box mb={{ xs: 6, md: 5 }}>
-          <InputComponent
-            fullWidth
-            name="title"
-            required
-            variant="outlined"
-            label="Title"
-            value={todo?.title}
-            onChange={handleChange}
-            error={errorText?.title}
-            helperText={errorText?.title}
-          />
-        </Box>
-        <Box mb={{ xs: 6, md: 5 }}>
-          <InputComponent
-            fullWidth
-            required
-            name="description"
-            variant="outlined"
-            label="Description"
-            type="textarea"
-            rows={4}
-            multiline
-            value={todo?.description}
-            onChange={handleChange}
-            error={errorText?.description}
-            helperText={errorText?.description}
-          />
-        </Box>
-        <Box mb={{ xs: 6, md: 5 }}>
-          {isEdit ? (
+      {openAlertBox ? (
+        <AlertDialog
+          open={openAlertBox}
+          title="Delete Card"
+          description="Are you sure you want to delete this card?"
+          onClose={handleCloseAlert}
+          onConfirm={handleConfirmDelete}
+        />
+      ) : (
+        <CustomModal
+          open={openCustomModal}
+          onClose={handleCloseModal}
+          title={id ? 'Edit Todo' : 'Add Todo'}
+        >
+          <Box mb={{ xs: 6, md: 5 }}>
+            <InputComponent
+              fullWidth
+              name="title"
+              required
+              variant="outlined"
+              label="Title"
+              value={todo?.title}
+              onChange={handleChange}
+              error={errorText?.title}
+              helperText={errorText?.title}
+            />
+          </Box>
+          <Box mb={{ xs: 6, md: 5 }}>
+            <InputComponent
+              fullWidth
+              required
+              name="description"
+              variant="outlined"
+              label="Description"
+              type="textarea"
+              rows={4}
+              multiline
+              value={todo?.description}
+              onChange={handleChange}
+              error={errorText?.description}
+              helperText={errorText?.description}
+            />
+          </Box>
+          <Box display="flex" justifyContent="flex-end" mb={{ xs: 6, md: 5 }}>
             <ButtonComponent
               variant="contained"
               color="primary"
-              title={'Update'}
-              onClick={handleOnEdit}
+              title={'Cancel'}
+              style={{ backgroundColor: 'whitesmoke', color: 'black' }}
+              onClick={handleOnCancel}
             />
-          ) : (
-            <ButtonComponent
-              variant="contained"
-              color="primary"
-              title={'Save'}
-              onClick={onSubmitClick}
-            />
-          )}
-          <ButtonComponent
-            variant="contained"
-            color="primary"
-            title={'Cancel'}
-            onClick={handleOnCancel}
-            sx={{ marginLeft: 2 }}
-          />
-        </Box>
-      </CustomModal>
-      <AlertDialog
-        open={openDialog}
-        title="Delete Card"
-        description="Are you sure you want to delete this card?"
-        onClose={handleCloseAlert}
-        onConfirm={handleConfirmDelete}
-      />
+            {id ? (
+              <ButtonComponent
+                variant="contained"
+                color="primary"
+                title={'Update'}
+                onClick={handleOnEdit}
+                sx={{ marginLeft: 2 }}
+              />
+            ) : (
+              <ButtonComponent
+                variant="contained"
+                color="primary"
+                title={'Save'}
+                onClick={onSubmitClick}
+                sx={{ marginLeft: 2 }}
+              />
+            )}
+          </Box>
+        </CustomModal>
+      )}
     </>
   );
 };
