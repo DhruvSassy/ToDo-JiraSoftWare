@@ -1,32 +1,39 @@
 import React from 'react';
 
-import { Dialog, DialogContent, DialogTitle, IconButton, styled } from '@mui/material';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  styled,
+} from '@mui/material';
 import { Close } from '@mui/icons-material';
 
 const CustomModalContainer = styled(Dialog)({
-    minHeight: "180px",
+  minHeight: '180px',
 });
 
 const ModalTitleContainer = styled(DialogTitle)({
-  display: "flex",
-  justifyContent: "space-between",
-  paddingRight: "48px",
-  alignItems: "center",
+  display: 'flex',
+  justifyContent: 'space-between',
+  paddingRight: '48px',
+  alignItems: 'center',
 });
 
 const CloseButton = styled(IconButton)({
   padding: 0,
 });
 
-const CustomModal = ({
-  title,
-  fullScreen,
-  onClose,
-  open,
-  children,
-  className = '',
-  autoClose = true,
-}) => {
+const CustomModal = (props) => {
+  const {
+    title,
+    fullScreen,
+    onClose,
+    open,
+    children,
+    autoClose = true,
+  } = props;
+
   return (
     <CustomModalContainer
       fullScreen={fullScreen}
@@ -40,12 +47,9 @@ const CustomModal = ({
           <Close />
         </CloseButton>
       </ModalTitleContainer>
-      <DialogContent >
-        {children}
-      </DialogContent>
+      <DialogContent>{children}</DialogContent>
     </CustomModalContainer>
   );
 };
 
 export default CustomModal;
-

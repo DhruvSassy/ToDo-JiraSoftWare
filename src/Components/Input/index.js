@@ -3,6 +3,7 @@ import React from 'react';
 import { TextField } from '@mui/material';
 
 const InputComponent = (props) => {
+  
   const {
     sx,
     fullWidth,
@@ -21,6 +22,7 @@ const InputComponent = (props) => {
     defaultValue,
     autoFocus
   } = props;
+
   return (
     <TextField
       sx={sx}

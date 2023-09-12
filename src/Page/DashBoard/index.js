@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Box, styled } from '@mui/material';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+
 import {
   addTask,
   editTask,
@@ -7,17 +10,16 @@ import {
   changeTaskStatus,
 } from '../../redux/action';
 
-import { Box, styled } from '@mui/material';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
-import ButtonComponent from '../../Components/ButtonComponent';
-import CardComponent from '../../Components/CardComponent';
-import CustomModal from '../../Components/CustomModal';
-import InputComponent from '../../Components/InputComponent';
-import AlertDialog from '../../Components/AlertDialog';
-import NotiStackComponent from '../../Components/NotiStackComponent';
+// import Button from '../../Components/Button';
+import { Button,Card,CustomModal, Input,AlertDialog,NotificationStack} from '../../Components';
+// import Card from '../../Components/Card';
+// import CustomModal from '../../Components/CustomModal';
+// import Input from '../../Components/Input';
+// import AlertDialog from '../../Components/AlertDialog';
+// import NotificationStack from '../../Components/NotificationStack';
 
-const StyledButton = styled(Box)({
+const HeaderCard = styled(Box)({
   display: 'flex',
   justifyContent: 'flex-end',
   marginBottom: '20px',
@@ -39,15 +41,16 @@ const DashBoard = () => {
   const [openCustomModal, setOpenCustomModal] = useState(false);
   const [errorText, setErrorText] = useState({});
   const [openAlertBox, setOpenAlertBox] = useState(false);
+  const [searchTicket, setSearchTicket] = useState('');
   const [todo, setTodo] = useState({
-    id: null,
+    id: '',
     title: '',
     description: '',
   });
 
   const { id, title, description } = todo;
 
-  const notiComponent = NotiStackComponent();
+  const notiComponent = NotificationStack();
 
   const handleAddTodo = () => {
     setOpenCustomModal(true);
@@ -56,7 +59,7 @@ const DashBoard = () => {
   const handleCloseModal = () => {
     setOpenCustomModal(false);
     setTodo({
-      id: null,
+      id: '',
       title: '',
       description: '',
     });
@@ -96,7 +99,7 @@ const DashBoard = () => {
 
     if (!validationResult.isError) {
       const newTodo = {
-        id: id || `${Date.now()}`,
+        id:`${Date.now()}`,
         title,
         description,
         status: 'ToDo',
@@ -111,7 +114,7 @@ const DashBoard = () => {
   const handleOnOpenModel = (id) => {
     const selectedItem = tasks.find((task) => task.id === id);
     setTodo({
-      id,
+      id : id,
       title: selectedItem?.title,
       description: selectedItem?.description,
     });
@@ -148,6 +151,17 @@ const DashBoard = () => {
       notiComponent.showSnackbar('ToDo Deleted successfully!', 'success');
     }
   };
+
+  const handleSearchChange = (event) => {
+    setSearchTicket(event.target.value);
+  };
+
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(searchTicket.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchTicket.toLowerCase())
+  );
+
 
   const onDragEnd = (result) => {
     if (!result.destination) {
@@ -187,9 +201,11 @@ const DashBoard = () => {
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>Jira Board</h1>
-      <StyledButton>
-        <ButtonComponent title="+ Create" onClick={handleAddTodo} />
-      </StyledButton>
+      <HeaderCard>
+        <Input title="search" type="search"  value={searchTicket}
+          onChange={handleSearchChange} placeholder="Search" sx={{marginRight:"100px"}} />
+        <Button title="+ Create" onClick={handleAddTodo} />
+      </HeaderCard>
       <div
         style={{ display: 'flex', justifyContent: 'center', height: '100%' }}
       >
@@ -197,8 +213,8 @@ const DashBoard = () => {
           {Status.map((status) => (
             <Droppable key={status.id} droppableId={status?.title}>
               {(provided, snapshot) => {
-                const task = tasks.filter((rec) => rec.status === status.title);
-                console.log("taskNew:",task);
+                const taskList = status.title === 'Search Results' ? filteredTasks : tasks;
+                const task = taskList.filter((rec) => rec.status === status.title);
                 return (
                   <div
                     ref={provided.innerRef}
@@ -222,39 +238,15 @@ const DashBoard = () => {
                       }}
                     />
                     {task.map((item, index) => (
-                      <Draggable
+                      <Card
                         key={item.id}
                         draggableId={item.id}
                         index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            ref={provided.innerRef}
-                            style={{
-                              padding: '8px',
-                              marginLeft: '8px',
-                              borderRadius: '4px',
-                              width: '91%',
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            <CardComponent
-                              onDelete={() => handleDeleteTodo(item.id)}
-                              title={item.title}
-                              description={item.description}
-                              onClick={() => handleOnOpenModel(item?.id)}
-                              style={{
-                                borderRadius: '7%',
-                                cursor: 'pointer',
-                                backgroundColor: 'whitesmoke',
-                                color: 'black',
-                              }}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
+                        onDelete={() => handleDeleteTodo(item.id)}
+                        onEdit={() => handleOnOpenModel(item.id)}
+                        title={item.title}
+                        description={item.description}
+                      />
                     ))}
                     {provided.placeholder}
                   </div>
@@ -267,8 +259,8 @@ const DashBoard = () => {
       {openAlertBox ? (
         <AlertDialog
           open={openAlertBox}
-          title="Delete Card"
-          description="Are you sure you want to delete this card?"
+          title="Delete Task"
+          description="Are you sure you want to delete this task?"
           onClose={handleCloseAlert}
           onConfirm={handleConfirmDelete}
         />
@@ -276,10 +268,10 @@ const DashBoard = () => {
         <CustomModal
           open={openCustomModal}
           onClose={handleCloseModal}
-          title={id ? 'Edit Todo' : 'Add Todo'}
+          title={id ? 'Edit Task' : 'Add Task'}
         >
           <Box mb={{ xs: 6, md: 5 }}>
-            <InputComponent
+            <Input
               fullWidth
               name="title"
               required
@@ -292,7 +284,7 @@ const DashBoard = () => {
             />
           </Box>
           <Box mb={{ xs: 6, md: 5 }}>
-            <InputComponent
+            <Input
               fullWidth
               required
               name="description"
@@ -308,7 +300,7 @@ const DashBoard = () => {
             />
           </Box>
           <Box display="flex" justifyContent="flex-end" mb={{ xs: 6, md: 5 }}>
-            <ButtonComponent
+            <Button
               variant="contained"
               color="primary"
               title={'Cancel'}
@@ -316,7 +308,7 @@ const DashBoard = () => {
               onClick={handleOnCancel}
             />
             {id ? (
-              <ButtonComponent
+              <Button
                 variant="contained"
                 color="primary"
                 title={'Update'}
@@ -324,7 +316,7 @@ const DashBoard = () => {
                 sx={{ marginLeft: 2 }}
               />
             ) : (
-              <ButtonComponent
+              <Button
                 variant="contained"
                 color="primary"
                 title={'Save'}
