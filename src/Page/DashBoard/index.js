@@ -207,8 +207,23 @@ const DashBoard = () => {
     }
   };
 
-  const handleChangeStatus = () => {
-    onDragEnd();
+  const handleChangeStatus = (newStatus) => {
+    if (id !== null) {
+      if (
+        (todo.status === 'ToDo' && newStatus === 'InProgress') ||
+        (todo.status === 'InProgress' && newStatus === 'ToDo') ||
+        (todo.status === 'InProgress' && newStatus === 'QA') ||
+        (todo.status === 'QA' && newStatus === 'InProgress') ||
+        (todo.status === 'QA' && newStatus === 'Done')
+      ) {
+        dispatch(changeTaskStatus(id, newStatus));
+        setOpenCustomModal(false);
+        notiComponent.showSnackbar(`Task moved to ${newStatus}`, 'success');
+      } else {
+        notiComponent.showSnackbar(`Invalid move to ${newStatus}`, 'error');
+        setOpenCustomModal(false);
+      }
+    }
   };
 
   return (
@@ -294,7 +309,14 @@ const DashBoard = () => {
           onClose={handleCloseModal}
           title={id ? 'Edit Task' : 'Add Task'}
         >
-         <StatusDropdown currentStatus="ToDo" Status={Status} onClick={handleChangeStatus}/> 
+          {id ? (
+            <StatusDropdown
+              Status={Status}
+              onChangeStatus={handleChangeStatus}
+            />
+          ) : (
+            ' '
+          )}
           <Box mb={{ xs: 6, md: 5 }}>
             <Input
               fullWidth

@@ -5,8 +5,6 @@ import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Box,styled } from '@mui/material';
 import ButtonComponent from '../Button';
-
-
 const HeaderCard = styled(Box)({
     display: 'flex',
     justifyContent: 'flex-end',
@@ -16,27 +14,30 @@ const HeaderCard = styled(Box)({
   });
 
 
-const StatusDropdown = ({ currentStatus ,onClick}) => (
+  const StatusDropdown = ({  onChangeStatus }) => (
     <PopupState variant="popover" popupId="demo-popup-menu">
       {(popupState) => (
         <HeaderCard>
           <ButtonComponent
             variant="contained"
             {...bindTrigger(popupState)}
-            title="ToDo" 
+            title="Status"
             style={{ width: "110px" }}
             endIcon={<KeyboardArrowDownIcon />}
-            onClick={onClick}
           ></ButtonComponent>
           <Menu {...bindMenu(popupState)}>
-            <MenuItem onClick={onClick}>InProgress</MenuItem>
-            <MenuItem onClick={onClick}>QA</MenuItem>
-            <MenuItem onClick={onClick}>Done</MenuItem>
+            <MenuItem onClick={() => onChangeStatus('ToDo')}>ToDo</MenuItem>
+            <MenuItem onClick={() => onChangeStatus('InProgress')}>
+              InProgress
+            </MenuItem>
+            <MenuItem onClick={() => onChangeStatus('QA')}>QA</MenuItem>
+            <MenuItem onClick={() => onChangeStatus('Done')}>Done</MenuItem>
           </Menu>
         </HeaderCard>
       )}
     </PopupState>
   );
+  
   
   export default StatusDropdown
 
