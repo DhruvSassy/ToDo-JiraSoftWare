@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@mui/material';
 
 const ButtonComponent = (props) => {
-  const { fullWidth, color, className, onClick, sx, title, style } = props;
+  const { fullWidth, color, className, onClick, sx, title, style,endIcon } = props;
   return (
     <Button
       fullWidth={fullWidth}
@@ -13,6 +13,7 @@ const ButtonComponent = (props) => {
       onClick={onClick}
       sx={sx}
       style={style}
+      endIcon={endIcon}
     >
       {title}
     </Button>

@@ -29,6 +29,8 @@ const CardBox = styled(Card)({
 const CardComponent = (props) => {
   const { onDelete, onEdit, title, description,draggableId,key,index } = props;
   return (
+    <>
+
     <Draggable draggableId={draggableId} key={key}
     index={index}>
       {(provided) => (
@@ -63,6 +65,7 @@ const CardComponent = (props) => {
         </div>
       )}
     </Draggable>
+    </>
   );
 };
 

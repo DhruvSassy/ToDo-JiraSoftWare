@@ -5,5 +5,4 @@ import CustomModal from './CustomModal';
 import Input from './Input';
 import NotificationStack from './NotificationStack';
 
-// Export each component individually
 export { AlertDialog, Button, Card, CustomModal, Input, NotificationStack };

@@ -10,14 +10,15 @@ import {
   changeTaskStatus,
 } from '../../redux/action';
 
-
-// import Button from '../../Components/Button';
-import { Button,Card,CustomModal, Input,AlertDialog,NotificationStack} from '../../Components';
-// import Card from '../../Components/Card';
-// import CustomModal from '../../Components/CustomModal';
-// import Input from '../../Components/Input';
-// import AlertDialog from '../../Components/AlertDialog';
-// import NotificationStack from '../../Components/NotificationStack';
+import {
+  Button,
+  Card,
+  CustomModal,
+  Input,
+  AlertDialog,
+  NotificationStack,
+} from '../../Components';
+import StatusDropdown from '../../Components/StatusDropdown';
 
 const HeaderCard = styled(Box)({
   display: 'flex',
@@ -33,11 +34,10 @@ const Status = [
   { id: 3, title: 'QA' },
   { id: 4, title: 'Done' },
 ];
-
+console.log('status::', Status.title);
 const DashBoard = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.todoJira.tasks);
-  console.log('task', tasks);
   const [openCustomModal, setOpenCustomModal] = useState(false);
   const [errorText, setErrorText] = useState({});
   const [openAlertBox, setOpenAlertBox] = useState(false);
@@ -57,12 +57,12 @@ const DashBoard = () => {
   };
 
   const handleCloseModal = () => {
-    setOpenCustomModal(false);
     setTodo({
       id: '',
       title: '',
       description: '',
     });
+    setOpenCustomModal(false);
     setErrorText({});
   };
 
@@ -71,18 +71,22 @@ const DashBoard = () => {
   };
 
   const handleChange = (evt) => {
-    setTodo({ ...todo, [evt.target.name]: evt.target.value });
+    const { name, value } = evt.target;
+    setTodo((prevTodo) => ({
+      ...prevTodo,
+      [name]: value,
+    }));
   };
 
   const validate = () => {
     let errors = {};
     let isError = false;
 
-    if (!title.trim()) {
+    if (!title) {
       errors.title = 'Please enter a title.';
       isError = true;
     }
-    if (!description.trim()) {
+    if (!description) {
       errors.description = 'Please enter a description.';
       isError = true;
     }
@@ -96,16 +100,14 @@ const DashBoard = () => {
 
   const onSubmitClick = () => {
     const validationResult = validate();
-
     if (!validationResult.isError) {
       const newTodo = {
-        id:`${Date.now()}`,
+        id: `${Date.now()}`,
         title,
         description,
         status: 'ToDo',
       };
       handleCloseModal();
-
       dispatch(addTask(newTodo));
       notiComponent.showSnackbar('ToDo added successfully!', 'success');
     }
@@ -113,12 +115,20 @@ const DashBoard = () => {
 
   const handleOnOpenModel = (id) => {
     const selectedItem = tasks.find((task) => task.id === id);
-    setTodo({
-      id : id,
-      title: selectedItem?.title,
-      description: selectedItem?.description,
-    });
-    setOpenCustomModal(true);
+    console.log('selectedItem:', selectedItem);
+
+    if (!selectedItem) {
+      return;
+    } else if (selectedItem.status === 'Done') {
+      setOpenCustomModal(false);
+    } else {
+      setTodo({
+        id: id,
+        title: selectedItem.title,
+        description: selectedItem.description,
+      });
+      setOpenCustomModal(true);
+    }
   };
 
   const handleOnEdit = () => {
@@ -152,6 +162,11 @@ const DashBoard = () => {
     }
   };
 
+  const handleCloseAlert = () => {
+    setOpenCustomModal(false);
+    setOpenAlertBox(false);
+  };
+
   const handleSearchChange = (event) => {
     setSearchTicket(event.target.value);
   };
@@ -161,7 +176,6 @@ const DashBoard = () => {
       task.title.toLowerCase().includes(searchTicket.toLowerCase()) ||
       task.description.toLowerCase().includes(searchTicket.toLowerCase())
   );
-
 
   const onDragEnd = (result) => {
     if (!result.destination) {
@@ -193,18 +207,27 @@ const DashBoard = () => {
     }
   };
 
-  const handleCloseAlert = () => {
-    setOpenCustomModal(false);
-    setOpenAlertBox(false);
+  const handleChangeStatus = () => {
+    onDragEnd();
   };
 
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>Jira Board</h1>
       <HeaderCard>
-        <Input title="search" type="search"  value={searchTicket}
-          onChange={handleSearchChange} placeholder="Search" sx={{marginRight:"100px"}} />
-        <Button title="+ Create" onClick={handleAddTodo} />
+        <Input
+          title="search"
+          type="search"
+          value={searchTicket}
+          onChange={handleSearchChange}
+          placeholder="Search"
+          sx={{ marginRight: '100px' }}
+        />
+        <Button
+          title="+ Create"
+          onClick={handleAddTodo}
+          style={{ marginTop: '20px', height: '40px' }}
+        />
       </HeaderCard>
       <div
         style={{ display: 'flex', justifyContent: 'center', height: '100%' }}
@@ -213,8 +236,9 @@ const DashBoard = () => {
           {Status.map((status) => (
             <Droppable key={status.id} droppableId={status?.title}>
               {(provided, snapshot) => {
-                const taskList = status.title === 'Search Results' ? filteredTasks : tasks;
-                const task = taskList.filter((rec) => rec.status === status.title);
+                const task = filteredTasks.filter(
+                  (rec) => rec.status === status.title
+                );
                 return (
                   <div
                     ref={provided.innerRef}
@@ -270,6 +294,7 @@ const DashBoard = () => {
           onClose={handleCloseModal}
           title={id ? 'Edit Task' : 'Add Task'}
         >
+         <StatusDropdown currentStatus="ToDo" Status={Status} onClick={handleChangeStatus}/> 
           <Box mb={{ xs: 6, md: 5 }}>
             <Input
               fullWidth
