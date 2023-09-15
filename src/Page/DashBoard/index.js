@@ -34,7 +34,6 @@ const Status = [
   { id: 3, title: 'QA' },
   { id: 4, title: 'Done' },
 ];
-console.log('status::', Status.title);
 const DashBoard = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.todoJira.tasks);
@@ -115,7 +114,6 @@ const DashBoard = () => {
 
   const handleOnOpenModel = (id) => {
     const selectedItem = tasks.find((task) => task.id === id);
-    console.log('selectedItem:', selectedItem);
 
     if (!selectedItem) {
       return;
@@ -144,26 +142,27 @@ const DashBoard = () => {
       notiComponent.showSnackbar('Todo Updated successfully!', 'success');
     }
   };
-
   const handleDeleteTodo = (id) => {
-    setOpenCustomModal(false);
-    setTodo({
-      id,
-    });
     setOpenAlertBox(true);
+    setTodo({ id: id });
+    console.log("taskId:",id)
+
   };
 
-  const handleConfirmDelete = () => {
-    if (id !== null) {
-      dispatch(deleteTask(id));
+  const handleConfirmDelete = (e) => {
+    console.log("todo?.id:",todo?.id)
+    if (todo?.id !== null) {
+      dispatch(deleteTask(todo?.id));
+      setTodo({ id: '' }); 
       setOpenAlertBox(false);
-      setOpenCustomModal(false);
+      e.stopPropagation(); 
+      // setOpenCustomModal(false);
       notiComponent.showSnackbar('ToDo Deleted successfully!', 'success');
     }
   };
 
   const handleCloseAlert = () => {
-    setOpenCustomModal(false);
+    // setOpenCustomModal(false);
     setOpenAlertBox(false);
   };
 
@@ -209,23 +208,28 @@ const DashBoard = () => {
 
   const handleChangeStatus = (newStatus) => {
     if (id !== null) {
-      if (
-        (todo.status === 'ToDo' && newStatus === 'InProgress') ||
-        (todo.status === 'InProgress' && newStatus === 'ToDo') ||
-        (todo.status === 'InProgress' && newStatus === 'QA') ||
-        (todo.status === 'QA' && newStatus === 'InProgress') ||
-        (todo.status === 'QA' && newStatus === 'Done')
-      ) {
-        dispatch(changeTaskStatus(id, newStatus));
-        setOpenCustomModal(false);
-        notiComponent.showSnackbar(`Task moved to ${newStatus}`, 'success');
-      } else {
-        notiComponent.showSnackbar(`Invalid move to ${newStatus}`, 'error');
-        setOpenCustomModal(false);
+      const currentTask = tasks.find((task) => task.id === id);
+  
+      if (currentTask) {
+        if (
+          (currentTask.status === 'ToDo' && newStatus === 'InProgress') ||
+          (currentTask.status === 'InProgress' && newStatus === 'ToDo') ||
+          (currentTask.status === 'InProgress' && newStatus === 'QA') ||
+          (currentTask.status === 'QA' && newStatus === 'InProgress') ||
+          (currentTask.status === 'QA' && newStatus === 'Done')
+        ) {
+          setOpenCustomModal(false);
+          dispatch(changeTaskStatus(id, newStatus));
+        } else {
+          setOpenCustomModal(false);
+          console.log('Invalid status transition');
+          notiComponent.showSnackbar(`Dont Move to ${currentTask.status} to ${newStatus}!`, 'error');
+
+        }
       }
     }
   };
-
+  
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>Jira Board</h1>
