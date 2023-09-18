@@ -27,12 +27,15 @@ const CardBox = styled(Card)({
 });
 
 const CardComponent = (props) => {
-  const { onDelete, onEdit, title, description,draggableId,key,index } = props;
-  return (
-    <>
+  const { onDelete, onEdit, title, description, draggableId, key, index } = props;
 
-    <Draggable draggableId={draggableId} key={key}
-    index={index}>
+  const closeClicked = (e) => {
+    e.stopPropagation();
+    onDelete(); 
+  };
+
+  return (
+    <Draggable draggableId={draggableId} key={key} index={index}>
       {(provided) => (
         <div
           {...provided.draggableProps}
@@ -47,7 +50,6 @@ const CardComponent = (props) => {
           }}
         >
           <CardBox
-            onDelete={onDelete}
             onClick={onEdit}
             style={{
               borderRadius: '7%',
@@ -59,13 +61,12 @@ const CardComponent = (props) => {
             <Item>{`Title: ${title}`}</Item>
             <Item>{`Description: ${description}`}</Item>
             <IconComponent>
-              <DeleteIcon onClick={onDelete} style={{ cursor: 'auto' }} />
+              <DeleteIcon onClick={closeClicked} style={{ cursor: 'pointer' }} />
             </IconComponent>
           </CardBox>
         </div>
       )}
     </Draggable>
-    </>
   );
 };
 

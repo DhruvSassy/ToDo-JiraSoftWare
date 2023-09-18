@@ -65,9 +65,6 @@ const DashBoard = () => {
     setErrorText({});
   };
 
-  const handleOnCancel = () => {
-    handleCloseModal();
-  };
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -142,27 +139,23 @@ const DashBoard = () => {
       notiComponent.showSnackbar('Todo Updated successfully!', 'success');
     }
   };
+
   const handleDeleteTodo = (id) => {
     setOpenAlertBox(true);
     setTodo({ id: id });
-    console.log("taskId:",id)
-
   };
 
   const handleConfirmDelete = (e) => {
-    console.log("todo?.id:",todo?.id)
     if (todo?.id !== null) {
       dispatch(deleteTask(todo?.id));
       setTodo({ id: '' }); 
       setOpenAlertBox(false);
-      e.stopPropagation(); 
-      // setOpenCustomModal(false);
+      // e.stopPropagation(); 
       notiComponent.showSnackbar('ToDo Deleted successfully!', 'success');
     }
   };
 
   const handleCloseAlert = () => {
-    // setOpenCustomModal(false);
     setOpenAlertBox(false);
   };
 
@@ -209,7 +202,6 @@ const DashBoard = () => {
   const handleChangeStatus = (newStatus) => {
     if (id !== null) {
       const currentTask = tasks.find((task) => task.id === id);
-  
       if (currentTask) {
         if (
           (currentTask.status === 'ToDo' && newStatus === 'InProgress') ||
@@ -224,7 +216,6 @@ const DashBoard = () => {
           setOpenCustomModal(false);
           console.log('Invalid status transition');
           notiComponent.showSnackbar(`Dont Move to ${currentTask.status} to ${newStatus}!`, 'error');
-
         }
       }
     }
@@ -356,7 +347,7 @@ const DashBoard = () => {
               color="primary"
               title={'Cancel'}
               style={{ backgroundColor: 'whitesmoke', color: 'black' }}
-              onClick={handleOnCancel}
+              onClick={handleCloseModal}
             />
             {id ? (
               <Button
