@@ -65,7 +65,6 @@ const DashBoard = () => {
     setErrorText({});
   };
 
-
   const handleChange = (evt) => {
     const { name, value } = evt.target;
     setTodo((prevTodo) => ({
@@ -148,9 +147,8 @@ const DashBoard = () => {
   const handleConfirmDelete = (e) => {
     if (todo?.id !== null) {
       dispatch(deleteTask(todo?.id));
-      setTodo({ id: '' }); 
+      setTodo({ id: '' });
       setOpenAlertBox(false);
-      // e.stopPropagation(); 
       notiComponent.showSnackbar('ToDo Deleted successfully!', 'success');
     }
   };
@@ -199,6 +197,18 @@ const DashBoard = () => {
     }
   };
 
+  const currentStatus = tasks.find((task) => task.id === id);
+
+  let statusOptions = [];
+
+  if (currentStatus && currentStatus.status === 'ToDo') {
+    statusOptions = ['InProgress'];
+  } else if (currentStatus && currentStatus.status === 'InProgress') {
+    statusOptions = ['ToDo', 'QA'];
+  } else if (currentStatus && currentStatus.status === 'QA') {
+    statusOptions = ['InProgress', 'Done'];
+  }
+
   const handleChangeStatus = (newStatus) => {
     if (id !== null) {
       const currentTask = tasks.find((task) => task.id === id);
@@ -215,12 +225,15 @@ const DashBoard = () => {
         } else {
           setOpenCustomModal(false);
           console.log('Invalid status transition');
-          notiComponent.showSnackbar(`Dont Move to ${currentTask.status} to ${newStatus}!`, 'error');
+          notiComponent.showSnackbar(
+            `Dont Move to ${currentTask.status} to ${newStatus}!`,
+            'error'
+          );
         }
       }
     }
   };
-  
+
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>Jira Board</h1>
@@ -306,8 +319,9 @@ const DashBoard = () => {
         >
           {id ? (
             <StatusDropdown
-              Status={Status}
               onChangeStatus={handleChangeStatus}
+              selectedStatus={currentStatus ? currentStatus.status : ''}
+              statusOptions={statusOptions}
             />
           ) : (
             ' '
