@@ -183,8 +183,8 @@ const DashBoard = () => {
 
     const destinationStatus = destination.droppableId;
     if (
-      (source.droppableId === 'ToDo' &&
-        destination.droppableId === 'InProgress') ||
+      (source.droppableId === Status[0]?.title &&
+        destination.droppableId === Status[1]?.title) ||
       (source.droppableId === 'InProgress' &&
         destination.droppableId === 'ToDo') ||
       (source.droppableId === 'InProgress' &&
@@ -199,22 +199,12 @@ const DashBoard = () => {
 
   const currentStatus = tasks.find((task) => task.id === id);
 
-  let statusOptions = [];
-
-  if (currentStatus && currentStatus.status === 'ToDo') {
-    statusOptions = ['InProgress'];
-  } else if (currentStatus && currentStatus.status === 'InProgress') {
-    statusOptions = ['ToDo', 'QA'];
-  } else if (currentStatus && currentStatus.status === 'QA') {
-    statusOptions = ['InProgress', 'Done'];
-  }
-
   const handleChangeStatus = (newStatus) => {
     if (id !== null) {
       const currentTask = tasks.find((task) => task.id === id);
       if (currentTask) {
         if (
-          (currentTask.status === 'ToDo' && newStatus === 'InProgress') ||
+          (currentTask.status === Status[0]?.title && newStatus === Status[1]?.title) ||
           (currentTask.status === 'InProgress' && newStatus === 'ToDo') ||
           (currentTask.status === 'InProgress' && newStatus === 'QA') ||
           (currentTask.status === 'QA' && newStatus === 'InProgress') ||
@@ -321,7 +311,7 @@ const DashBoard = () => {
             <StatusDropdown
               onChangeStatus={handleChangeStatus}
               selectedStatus={currentStatus ? currentStatus.status : ''}
-              statusOptions={statusOptions}
+              currentStatus={currentStatus} 
             />
           ) : (
             ' '

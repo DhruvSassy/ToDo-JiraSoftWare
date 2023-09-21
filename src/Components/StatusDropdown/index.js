@@ -12,7 +12,8 @@ const HeaderCard = styled(Box)({
   marginRight: '10px',
 });
 
-const StatusDropdown = ({ onChangeStatus, selectedStatus, statusOptions }) => {
+
+const StatusDropdown = ({ onChangeStatus, selectedStatus,currentStatus }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -24,12 +25,22 @@ const StatusDropdown = ({ onChangeStatus, selectedStatus, statusOptions }) => {
     setAnchorEl(null);
   };
 
+  let statusOptions = [];
+
+  if (currentStatus && currentStatus.status === 'ToDo') {
+    statusOptions = ['InProgress'];
+  } else if (currentStatus && currentStatus.status === 'InProgress') {
+    statusOptions = ['ToDo', 'QA'];
+  } else if (currentStatus && currentStatus.status === 'QA') {
+    statusOptions = ['InProgress', 'Done'];
+  }
+
   return (
     <div>
       <HeaderCard>
         <Button
           id="status-button"
-          aria-controls={open ? 'status-menu' : undefined}
+          // aria-controls={open ? 'status-menu' : undefined}
           // aria-haspopup="true"
           // aria-expanded={open ? 'true' : undefined}
           onClick={handleClick}
@@ -42,9 +53,9 @@ const StatusDropdown = ({ onChangeStatus, selectedStatus, statusOptions }) => {
 
       <Menu
         id="status-menu"
-        MenuListProps={{
-          'aria-labelledby': 'status-button',
-        }}
+        // MenuListProps={{
+        //   'aria-labelledby': 'status-button',
+        // }}
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
