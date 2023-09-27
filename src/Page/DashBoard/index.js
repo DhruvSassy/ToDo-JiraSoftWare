@@ -34,9 +34,11 @@ const Status = [
   { id: 3, title: 'QA' },
   { id: 4, title: 'Done' },
 ];
+
 const DashBoard = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.todoJira.tasks);
+  console.log('tasks:', tasks);
   const [openCustomModal, setOpenCustomModal] = useState(false);
   const [errorText, setErrorText] = useState({});
   const [openAlertBox, setOpenAlertBox] = useState(false);
@@ -46,8 +48,6 @@ const DashBoard = () => {
     title: '',
     description: '',
   });
-
-  const { id, title, description } = todo;
 
   const notiComponent = NotificationStack();
 
@@ -77,11 +77,11 @@ const DashBoard = () => {
     let errors = {};
     let isError = false;
 
-    if (!title) {
+    if (!todo.title) {
       errors.title = 'Please enter a title.';
       isError = true;
     }
-    if (!description) {
+    if (!todo.description) {
       errors.description = 'Please enter a description.';
       isError = true;
     }
@@ -98,9 +98,9 @@ const DashBoard = () => {
     if (!validationResult.isError) {
       const newTodo = {
         id: `${Date.now()}`,
-        title,
-        description,
-        status: 'ToDo',
+        title: todo.title,
+        description: todo.description,
+        status: Status[0]?.id,
       };
       handleCloseModal();
       dispatch(addTask(newTodo));
@@ -113,7 +113,7 @@ const DashBoard = () => {
 
     if (!selectedItem) {
       return;
-    } else if (selectedItem.status === 'Done') {
+    } else if (selectedItem.status === Status[3]?.id) {
       setOpenCustomModal(false);
     } else {
       setTodo({
@@ -144,7 +144,7 @@ const DashBoard = () => {
     setTodo({ id: id });
   };
 
-  const handleConfirmDelete = (e) => {
+  const handleConfirmDelete = () => {
     if (todo?.id !== null) {
       dispatch(deleteTask(todo?.id));
       setTodo({ id: '' });
@@ -167,6 +167,28 @@ const DashBoard = () => {
       task.description.toLowerCase().includes(searchTicket.toLowerCase())
   );
 
+
+
+  const handleCommonDragAndDrop = (
+    sourceDroppableId,
+    destinationDroppableId
+  ) => {
+    const isAllowedTransition = [
+      [Status[0]?.id, Status[1]?.id],
+      [Status[1]?.id, Status[0]?.id],
+      [Status[1]?.id, Status[2]?.id],
+      [Status[2]?.id, Status[1]?.id],
+      [Status[2]?.id, Status[3]?.id],
+    ].some(([src, dest]) => {
+      return (
+        (sourceDroppableId === src && destinationDroppableId === dest) ||
+        (sourceDroppableId === dest && destinationDroppableId === src)
+      );
+    });
+
+    return isAllowedTransition;
+  };
+
   const onDragEnd = (result) => {
     if (!result.destination) {
       return;
@@ -175,48 +197,36 @@ const DashBoard = () => {
     const { source, destination } = result;
     const draggedTaskId = result.draggableId;
 
-    const draggedTask = tasks.find((task) => task.id === draggedTaskId);
+    const isAllowed = handleCommonDragAndDrop(
+      source.droppableId,
+      destination.droppableId
+    );
 
-    if (!draggedTask) {
-      return;
-    }
-
-    const destinationStatus = destination.droppableId;
-    if (
-      (source.droppableId === Status[0]?.title &&
-        destination.droppableId === Status[1]?.title) ||
-      (source.droppableId === 'InProgress' &&
-        destination.droppableId === 'ToDo') ||
-      (source.droppableId === 'InProgress' &&
-        destination.droppableId === 'QA') ||
-      (source.droppableId === 'QA' &&
-        destination.droppableId === 'InProgress') ||
-      (source.droppableId === 'QA' && destination.droppableId === 'Done')
-    ) {
-      dispatch(changeTaskStatus(draggedTaskId, destinationStatus));
+    if (isAllowed) {
+      dispatch(changeTaskStatus(draggedTaskId, destination.droppableId));
     }
   };
 
-  const currentStatus = tasks.find((task) => task.id === id);
+  const currentStatus = tasks.find((task) => task.id === todo.id);
 
-  const handleChangeStatus = (newStatus) => {
-    if (id !== null) {
-      const currentTask = tasks.find((task) => task.id === id);
+
+  
+  const handleChangeStatus = (statusId) => {
+    if (todo.id !== null) {
+      const currentTask = tasks.find((task) => task.id === todo.id);
       if (currentTask) {
-        if (
-          (currentTask.status === Status[0]?.title && newStatus === Status[1]?.title) ||
-          (currentTask.status === 'InProgress' && newStatus === 'ToDo') ||
-          (currentTask.status === 'InProgress' && newStatus === 'QA') ||
-          (currentTask.status === 'QA' && newStatus === 'InProgress') ||
-          (currentTask.status === 'QA' && newStatus === 'Done')
-        ) {
+        const currentStatusId = currentTask.status;
+        
+        if (handleCommonDragAndDrop(currentStatusId, statusId)) {
+          dispatch(changeTaskStatus(todo.id, statusId));
           setOpenCustomModal(false);
-          dispatch(changeTaskStatus(id, newStatus));
         } else {
           setOpenCustomModal(false);
           console.log('Invalid status transition');
           notiComponent.showSnackbar(
-            `Dont Move to ${currentTask.status} to ${newStatus}!`,
+            `Don't move from ${Status.find(
+              (status) => status.id === currentStatusId
+            )?.title} to ${Status.find((status) => status.id === statusId)?.title}!`,
             'error'
           );
         }
@@ -247,11 +257,12 @@ const DashBoard = () => {
       >
         <DragDropContext onDragEnd={onDragEnd}>
           {Status.map((status) => (
-            <Droppable key={status.id} droppableId={status?.title}>
+            <Droppable key={status.id} droppableId={status?.id}>
               {(provided, snapshot) => {
                 const task = filteredTasks.filter(
-                  (rec) => rec.status === status.title
+                  (rec) => rec.status === status.id
                 );
+
                 return (
                   <div
                     ref={provided.innerRef}
@@ -305,13 +316,16 @@ const DashBoard = () => {
         <CustomModal
           open={openCustomModal}
           onClose={handleCloseModal}
-          title={id ? 'Edit Task' : 'Add Task'}
+          title={todo.id ? 'Edit Task' : 'Add Task'}
         >
-          {id ? (
+          {todo.id ? (
             <StatusDropdown
               onChangeStatus={handleChangeStatus}
-              selectedStatus={currentStatus ? currentStatus.status : ''}
-              currentStatus={currentStatus} 
+              selectedStatus={
+                Status.find((status) => status.id === currentStatus.status)
+                  ?.title
+              }
+              currentStatus={currentStatus}
             />
           ) : (
             ' '
@@ -353,7 +367,7 @@ const DashBoard = () => {
               style={{ backgroundColor: 'whitesmoke', color: 'black' }}
               onClick={handleCloseModal}
             />
-            {id ? (
+            {todo.id ? (
               <Button
                 variant="contained"
                 color="primary"

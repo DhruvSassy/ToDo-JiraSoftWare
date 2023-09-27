@@ -12,8 +12,7 @@ const HeaderCard = styled(Box)({
   marginRight: '10px',
 });
 
-
-const StatusDropdown = ({ onChangeStatus, selectedStatus,currentStatus }) => {
+const StatusDropdown = ({ onChangeStatus, selectedStatus, currentStatus }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -27,12 +26,18 @@ const StatusDropdown = ({ onChangeStatus, selectedStatus,currentStatus }) => {
 
   let statusOptions = [];
 
-  if (currentStatus && currentStatus.status === 'ToDo') {
-    statusOptions = ['InProgress'];
-  } else if (currentStatus && currentStatus.status === 'InProgress') {
-    statusOptions = ['ToDo', 'QA'];
-  } else if (currentStatus && currentStatus.status === 'QA') {
-    statusOptions = ['InProgress', 'Done'];
+  if (currentStatus && currentStatus.status === 1) {
+    statusOptions = [{ id: 2, title: 'InProgress' }];
+  } else if (currentStatus && currentStatus.status === 2) {
+    statusOptions = [
+      { id: 1, title: 'ToDo' },
+      { id: 3, title: 'QA' },
+    ];
+  } else if (currentStatus && currentStatus.status === 3) {
+    statusOptions = [
+      { id: 2, title: 'InProgress' },
+      { id: 4, title: 'Done' },
+    ];
   }
 
   return (
@@ -40,9 +45,6 @@ const StatusDropdown = ({ onChangeStatus, selectedStatus,currentStatus }) => {
       <HeaderCard>
         <Button
           id="status-button"
-          // aria-controls={open ? 'status-menu' : undefined}
-          // aria-haspopup="true"
-          // aria-expanded={open ? 'true' : undefined}
           onClick={handleClick}
           variant="contained"
           style={{ width: '130px' }}
@@ -53,9 +55,6 @@ const StatusDropdown = ({ onChangeStatus, selectedStatus,currentStatus }) => {
 
       <Menu
         id="status-menu"
-        // MenuListProps={{
-        //   'aria-labelledby': 'status-button',
-        // }}
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
@@ -63,14 +62,14 @@ const StatusDropdown = ({ onChangeStatus, selectedStatus,currentStatus }) => {
       >
         {statusOptions.map((status) => (
           <MenuItem
-            key={status}
+            key={status.id}
             onClick={() => {
-              onChangeStatus(status);
+              onChangeStatus(status.id);
               handleClose();
             }}
             style={{ width: '130px' }}
           >
-            {status}
+            {status.title}
           </MenuItem>
         ))}
       </Menu>

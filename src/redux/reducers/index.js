@@ -33,11 +33,13 @@ const todoReducer = (state = initialState, action) => {
         tasks: state.tasks.filter((item) => item.id !== action.payload),
       };
 
-    case CHANGE_TASK_STATUS:
-      const { taskId, newStatus } = action.payload;
+      case CHANGE_TASK_STATUS:
+      const { taskId, statusId } = action.payload;
+
       const updatedTasks = state.tasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
+        task.id === taskId ? { ...task, status: statusId } : task
       );
+
       return {
         ...state,
         tasks: updatedTasks,

@@ -20,10 +20,11 @@ export const deleteTask = (taskId) => ({
   payload: taskId,
 });
 
-export const changeTaskStatus = (taskId, newStatus) => ({
+export const changeTaskStatus = (taskId, statusId) => ({
   type: CHANGE_TASK_STATUS,
   payload: {
     taskId,
-    newStatus,
+    statusId,
   },
 });
+
